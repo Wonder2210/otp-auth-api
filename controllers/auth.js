@@ -2,9 +2,6 @@ import User from '../models/user';
 import jwt from 'jsonwebtoken';
 import {Client} from 'authy-client';
 
-
-
-
 const authOtp = new Client({key:"Wt6HSgaTkfUoY3C5k7i8Zo6LF42dSmrY"});
 
 export const signup =async (req,res)=>{
@@ -32,12 +29,18 @@ export const signup =async (req,res)=>{
 
 }
 export const log_emailSms =async (req,res)=>{
+
   const user = await User.findOne({email:req.body.email});
+  if(!user){
+    res.status(400).json({error:"not user founded"})
+  }
+
   authOtp.requestSms({ authyId:user.authy_id,force:true})
   .then(resp=>{
     res.status(200).json({message:resp});
   })
   .catch((e)=>{
+
     res.status(400).json({"message":e})
   })
 

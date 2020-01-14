@@ -2,6 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import morgan from 'morgan';
 import bodyParser from 'body-parser';
+import cors from 'cors';
 
 
 import authRoutes from './routes/auth';
@@ -14,7 +15,7 @@ mongoose.connect('mongodb://localhost/test',{
   useUnifiedTopology:true,
   useCreateIndex: true
 }).then(db=>{
-            console.log("DbConnected");
+            console.log("Db Connected successfully");
           })
     .catch(err=>{
             console.log("Error");
@@ -22,6 +23,7 @@ mongoose.connect('mongodb://localhost/test',{
 
 
 app.use(bodyParser.json());
+app.use(cors())
 app.use(morgan('dev'));
 app.use('/api/auth',authRoutes);
 
