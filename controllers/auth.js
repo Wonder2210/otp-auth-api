@@ -2,7 +2,8 @@ import User from '../models/user';
 import jwt from 'jsonwebtoken';
 import {Client} from 'authy-client';
 
-const authOtp = new Client({key:"Wt6HSgaTkfUoY3C5k7i8Zo6LF42dSmrY"});
+const key = process.env.TWILIO_KEY;
+const authOtp = new Client({key});
 
 export const signup =async (req,res)=>{
   let authProcess=null;
@@ -38,8 +39,7 @@ export const log_emailSms =async (req,res)=>{
   authOtp.requestSms({ authyId:user.authy_id,force:true})
   .then(resp=>{
     res.status(200).json({message:resp});
-  })
-  .catch((e)=>{
+  }).catch((e)=>{
 
     res.status(400).json({"message":e})
   })
@@ -50,17 +50,22 @@ export const log_emailCall =async (req,res)=>{
   authOtp.requestCall({ authyId:user.authy_id})
   .then(resp=>{
     res.status(200).json({message:resp});
-  })
-  .catch((e)=>{
-    res.status(400).json({"message":e})
+  }).catch((e)=>{
+    res.status(400).json({"message":e});
   })
 
 }
 
 export const login = async(req,res)=>{
-  const user = await User.findOne({email:req.body.email});
-  if(!user){
+  let user=null;
+  console.log(req.body.email);
+  try {
+    user = await User.findOne({email:req.body.email});
+  } catch (e) {
+    console.log(e);
     res.status(400).json({"error":"bad login"});
+    return;
+
   }
   authOtp.verifyToken({authyId:user.authy_id,token:req.body.token})
     .then(resp=>{
@@ -68,8 +73,7 @@ export const login = async(req,res)=>{
         expiresIn:3600
       });
       res.status(200).json({token})
-    })
-    .catch(error=>{
+    }).catch((error)=>{
       res.status(401).json({error});
-    })
+    });
 }
